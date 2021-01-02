@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import custom_fxml.GanttChart?>
+
+<fx:root type="javafx.scene.control.Tab" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="381.0" prefWidth="471.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <DatePicker fx:id="datePicker" layoutX="136.0" layoutY="24.0" onAction="#onAction" prefHeight="36.0" prefWidth="199.0" promptText="prompt text" />
+      <GanttChart fx:id="ganttChart" layoutY="84.0" prefHeight="273.0" prefWidth="471.0"> </GanttChart>
+   </children>
+</AnchorPane>
+      </fx:root>

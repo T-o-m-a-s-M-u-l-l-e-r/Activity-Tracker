@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import custom_fxml.TrendChart?>
+
+<fx:root type="AnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="381.0" prefWidth="471.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <TrendChart fx:id="chart" layoutY="29.0" prefHeight="273.0" prefWidth="436.0">    </TrendChart>
+      <ChoiceBox fx:id="choiceBox" layoutX="280.0" layoutY="2.0" prefWidth="150.0" />
+   </children>
+</fx:root>
