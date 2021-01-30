@@ -10,6 +10,7 @@ import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.joda.time.format.DateTimeFormat;
 
+import controllers.HistoryTab.SpecialComboBox.ProgramDataWrapper;
 import javafx.geometry.Point2D;
 import javafx.util.Pair;
 import model.Program.Session;
@@ -25,6 +26,7 @@ public class Interpret {
 			dataDatabase.add(new ProgramData(program.getDictionary(), program.getSessions(), program.getIcon()));
 		}
 
+		dataDatabase.sort(new ProgramDataTimesOpenedComparator(this, null));
 	}
 	
 	public int getTimesOpened(ProgramData program, DateTime intervalStart) {
@@ -94,10 +96,21 @@ public class Interpret {
 		return output;
 	}
 	
+	public ArrayList<ProgramData> getDataDatabase() {
+		return dataDatabase;
+	}
+	
 	public Duration getAverageSessionDuration(ProgramData program, DateTime intervalStart) {
 		ArrayList<Session> sessions = new ArrayList<Session>(program.getSessions());
 		
 		return getRuntime(program, intervalStart).dividedBy(sessions.size());
+	}
+	
+	public Duration getTimeElapsedSinceOpen(ProgramData program) {
+		Interval interval = program.getSessionIntervals().get(program.getSessionIntervals().size()-1);
+		DateTime start = interval.getStart();
+		
+		return new Duration(start, new DateTime());
 	}
 	
 	public ArrayList<Point2D> getAverageDayTrend(ProgramData program, int day) {
@@ -245,6 +258,25 @@ public class Interpret {
     	}
 		return null;
 	}
+	
+	static class ProgramDataTimesOpenedComparator implements Comparator<ProgramData> {
+		private Interpret interpret;
+		private DateTime intervalStart;
+		
+		public ProgramDataTimesOpenedComparator(Interpret interpret, DateTime intervalStart) {
+			this.interpret = interpret;
+			this.intervalStart = intervalStart;
+		}
+
+		@Override
+		public int compare(ProgramData o1, ProgramData o2) {
+			Integer timesOpened1 = interpret.getTimesOpened(o1, intervalStart);
+			Integer timesOpened2 = interpret.getTimesOpened(o2, intervalStart);
+			
+			return timesOpened1.compareTo(timesOpened2);
+		}
+		
+	}
 
 	static class IntervalComparator implements Comparator<Interval> {
 
@@ -286,13 +318,20 @@ public class Interpret {
 				presentable += propertyDictionary.getOrDefault("Product", "");
 			}
 			
-			
-			
 			return presentable;
+		}
+		
+		@Override
+		public String toString() {
+			return getPresentableName();
 		}
 
 		public String getProperty(String key) {
 			return propertyDictionary.get(key);
+		}
+		
+		public String getName() {
+			return propertyDictionary.getOrDefault("Name", "");
 		}
 
 		public Hashtable<String, String> getDictionary() {
@@ -323,6 +362,18 @@ public class Interpret {
 			}
 
 			return mergeIntervalLists(intervals);
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+
+			if (obj instanceof ProgramDataWrapper) {
+				ProgramData program = ((ProgramDataWrapper)obj).getProgramData();
+				return propertyDictionary.equals(program.getDictionary());
+				
+			}
+			
+			return super.equals(obj);
 		}
 
 	}

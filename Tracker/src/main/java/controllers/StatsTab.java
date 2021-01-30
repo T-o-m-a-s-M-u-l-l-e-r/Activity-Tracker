@@ -12,110 +12,91 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Callback;
-import javafx.util.Pair;
-import javafx.util.StringConverter;
 import launch.Main;
 import model.Interpret.ProgramData;
 
 public class StatsTab extends CustomTab implements Initializable {
-
-	private enum Stat {
-		Time_spent, Average_session_duration, Times_opened;
-		//Enum names are used as text in the label
-		//Order of constants defines order of labels
-		//Use underscore instead of space
-		
-		private String getData(ProgramData program, boolean total) {
-			DateTime date = total?null:new DateTime().minusDays(14);
-			
-			switch (this) {
-			case Times_opened:
-				return String.valueOf(interpret.getTimesOpened(program, date));
-			case Time_spent:
-				return durationToString(interpret.getRuntime(program, date));
-			case Average_session_duration:
-				return durationToString(interpret.getAverageSessionDuration(program, date));
-			default: return null;
-			}
-			
-		}
-		
-		public Pair<String, String> getPair(ProgramData program) {
-			String toString = toString().replaceAll("_", " ");
-			return new Pair<String, String>(String.format("%s: %s", toString, getData(program, true)), String.format("%s: %s", toString, getData(program, false)));
-		}
-		
-	}
+	
+	public static final String TIME_ELAPSED_FORMAT = "It has been %s since you last opened %s";
+	public static final String AVERAGE_SESSION_FORMAT = "Average session duration: %s";
+	public static final String TIMES_OPENED_FORMAT = "Times opened: %s";
+	public static final String TIME_SPENT_FORMAT = "Time spent: %s";
 
 	@FXML
-	private ComboBox comboBox_program;
+	private Label label_timeSpent_total, label_averageSession_total, label_timesOpened_total, label_timeSpent_weeks,
+			label_averageSession_weeks, label_timesOpened_weeks, label_timeElapsed;
+	@FXML
+	private ComboBox<ProgramData> comboBox_program;
 	@FXML
 	private ImageView imageView_programIcon;
-	@FXML
-	private ListView<String> listView_total, listView_recent;
 
 	public StatsTab() {
 		super("Statistics", Main.STATS_TAB_FXML_PATH);
 	}
 
-	public static String durationToString(Duration duration) {
-		int hours = (int) (duration.getStandardHours());
-		int minutes = (int) (duration.getStandardMinutes() - hours * 60);
-		String output = String.format("%dh, %dmin", hours, minutes);
-		return output;
+	public static String durationToString(Duration duration, boolean verbose) {
+
+		int remainingHours = (int) (duration.getStandardHours());
+		int minutes = (int) (duration.getStandardMinutes() - remainingHours * 60);
+		
+		if (verbose) {
+			String output = "";
+
+				int years = remainingHours/(365*24);
+				remainingHours -= years*365*24;
+				output += String.format("%d years", years);
+			
+				int months = remainingHours/(30*24);
+				remainingHours -= months*30*24;
+				output += String.format(", %d months", months);
+			
+				int days = remainingHours/(24);
+				remainingHours -= days*24;
+				output += String.format(", %d days", days);
+			
+				output += String.format(", %d hours", remainingHours);
+				output += String.format(" and %d minutes", minutes);
+			
+			return output;
+		} else {
+			return String.format("%dh, %dmin", remainingHours, minutes);
+		}
+		
 	}
 
 	@FXML
 	public void comboBoxAction(ActionEvent event) {
-		String programName = ((Pair<String, String>) comboBox_program.getValue()).getKey();
-		setup(programName);
+		setup(comboBox_program.getValue());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		comboBox_program.getItems().addAll(programPairNameList);
+		comboBox_program.getItems().addAll(programDatabase);
+		comboBox_program.setValue(programDatabase.get(0));
+		
+		setup(programDatabase.get(0));
 
-		comboBox_program.setValue(programPairNameList.get(0));
-		setup(programPairNameList.get(0).getKey());
-
-		comboBox_program.setConverter(new StringConverter<Pair<String, String>>() {
+		comboBox_program.setCellFactory(new Callback<ListView<ProgramData>, ListCell<ProgramData>>() {
 			@Override
-			public String toString(Pair<String, String> obj) {
-				if (obj == null) {
-					return "";
-				} else {
-					return obj.getValue();
-				}
-			}
-
-			@Override
-			public Pair<String, String> fromString(String s) {
-				return null;
-			}
-		});
-
-		comboBox_program.setCellFactory(new Callback<ListView<Pair<String, String>>, ListCell<Pair<String, String>>>() {
-			@Override
-			public ListCell<Pair<String, String>> call(ListView<Pair<String, String>> p) {
-				return new ListCell<Pair<String, String>>() {
+			public ListCell<ProgramData> call(ListView<ProgramData> p) {
+				return new ListCell<ProgramData>() {
 					@Override
-					protected void updateItem(Pair<String, String> item, boolean empty) {
+					protected void updateItem(ProgramData item, boolean empty) {
 						super.updateItem(item, empty);
-						getListView().setId("statsTab_listView");
+						getListView().setId("trendsTab_listView");
 						if (item == null || empty) {
 							setGraphic(null);
 						} else {
-							setText(item.getValue());
-							ProgramData program = interpret.getProgram(item.getKey());
+							setText(item.getPresentableName());
 							Image icon = null;
 							try {
-								icon = SwingFXUtils.toFXImage(program.getIcon(), null);
+								icon = SwingFXUtils.toFXImage(item.getIcon(), null);
 								ImageView iconImageView = new ImageView(icon);
 								iconImageView.setFitHeight(35);
 								iconImageView.setPreserveRatio(true);
@@ -129,59 +110,30 @@ public class StatsTab extends CustomTab implements Initializable {
 				};
 			}
 		});
-		
-		listView_total.setCellFactory(param -> new ListCell<String>(){
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item==null) {
-                    setGraphic(null);
-                    setText(null); 
-                }else{
-
-                    setMinWidth(param.getWidth());
-                    setMaxWidth(param.getWidth());
-                    setPrefWidth(param.getWidth());
-
-                    setWrapText(true);
-
-                    setText(item.toString());
-                }
-            }
-        });
 	}
 
-	public void setup(String programName) {
-		ProgramData program = interpret.getProgram(programName);
-
+	public void setup(ProgramData program) {
 		imageView_programIcon.setImage(SwingFXUtils.toFXImage(program.getIcon(), null));
-		listView_recent.getItems().clear();
-		listView_total.getItems().clear();
 		
-		for (Stat stat : Stat.values()) {
-			
-			Pair<String, String> pair = stat.getPair(program);
-			listView_total.getItems().add(pair.getKey());
-			listView_recent.getItems().add(pair.getValue());
-			
-		}
+		String timeElapsed = durationToString(interpret.getTimeElapsedSinceOpen(program), true);
+		label_timeElapsed.setText(String.format(TIME_ELAPSED_FORMAT, timeElapsed, program.getPresentableName()));
 
-//		String timeSpentTotal = durationToString(interpret.getRuntime(program, null));
-//		label_total_timeSpent.setText(String.format(TIME_SPENT_FORMAT, timeSpentTotal));
-//
-//		String timeSpent2Weeks = durationToString(interpret.getRuntime(program, new DateTime().minusDays(14)));
-//		label_2weeks_timeSpent.setText(String.format(TIME_SPENT_FORMAT, timeSpent2Weeks));
-//
-//		String averageTotalSession = durationToString(interpret.getAverageSessionDuration(program, null));
-//		label_total_averageSession.setText(String.format(AVERAEG_SESSION_FORMAT, averageTotalSession));
-//
-//		String average2WeeksSession = durationToString(
-//				interpret.getAverageSessionDuration(program, new DateTime().minusDays(14)));
-//		label_2weeks_averageSession.setText(String.format(AVERAEG_SESSION_FORMAT, average2WeeksSession));
-//
-//		label_total_timesOpened.setText(String.format(TIMES_OPENED_FORMAT, interpret.getTimesOpened(program, null)));
-//		label_2weeks_timesOpened.setText(
-//				String.format(TIMES_OPENED_FORMAT, interpret.getTimesOpened(program, new DateTime().minusDays(14))));
+		String timeSpentTotal = durationToString(interpret.getRuntime(program, null), false);
+		label_timeSpent_total.setText(String.format(TIME_SPENT_FORMAT, timeSpentTotal));
+
+		String timeSpent2Weeks = durationToString(interpret.getRuntime(program, new DateTime().minusDays(14)), false);
+		label_timeSpent_weeks.setText(String.format(TIME_SPENT_FORMAT, timeSpent2Weeks));
+
+		String averageTotalSession = durationToString(interpret.getAverageSessionDuration(program, null), false);
+		label_averageSession_total.setText(String.format(AVERAGE_SESSION_FORMAT, averageTotalSession));
+
+		String average2WeeksSession = durationToString(
+				interpret.getAverageSessionDuration(program, new DateTime().minusDays(14)), false);
+		label_averageSession_weeks.setText(String.format(AVERAGE_SESSION_FORMAT, average2WeeksSession));
+
+		label_timesOpened_total.setText(String.format(TIMES_OPENED_FORMAT, interpret.getTimesOpened(program, null)));
+		label_timesOpened_weeks.setText(
+				String.format(TIMES_OPENED_FORMAT, interpret.getTimesOpened(program, new DateTime().minusDays(14))));
 	}
 
 }

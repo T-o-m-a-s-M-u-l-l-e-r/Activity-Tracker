@@ -2,37 +2,35 @@
 
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.text.Font?>
 
 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="381.0" prefWidth="470.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
                <children>
                   <ComboBox fx:id="comboBox_program" layoutX="86.0" layoutY="25.0" onAction="#comboBoxAction" prefHeight="25.0" prefWidth="292.0" />
-                  <Label layoutX="91.0" layoutY="54.0" text="In total">
+                  <Label layoutX="91.0" layoutY="62.0" text="In total">
                      <font>
                         <Font size="18.0" />
                      </font>
                   </Label>
-      <Label layoutX="280.0" layoutY="54.0" text="Last 2 weeks">
+      <Label layoutX="280.0" layoutY="62.0" text="Last 2 weeks">
          <font>
             <Font size="18.0" />
          </font>
       </Label>
       <ImageView fx:id="imageView_programIcon" fitHeight="32.0" fitWidth="32.0" layoutX="29.0" layoutY="22.0" pickOnBounds="true" preserveRatio="true" />
-      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" layoutX="29.0" layoutY="82.0" maxHeight="251.0" maxWidth="413.0" prefHeight="246.0" prefWidth="413.0">
-         <content>
-            <BorderPane prefHeight="0" prefWidth="0">
-               <left>
-                  <ListView fx:id="listView_total" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
-               </left>
-               <right>
-                  <ListView fx:id="listView_recent" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
-               </right>
-            </BorderPane>
-         </content>
-      </ScrollPane>
+      <Separator layoutX="229.0" layoutY="62.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="6.0" />
+      <Label fx:id="label_timeSpent_total" layoutX="21.0" layoutY="101.0" prefHeight="40.0" prefWidth="197.0" text="Time spent: 0h, 2min" />
+      <Label fx:id="label_averageSession_total" layoutX="21.0" layoutY="141.0" prefHeight="40.0" prefWidth="197.0" text="Average session duration: 0h, 1min" />
+      <Label fx:id="label_timesOpened_total" layoutX="21.0" layoutY="181.0" prefHeight="40.0" prefWidth="197.0" text="Times opened: 2" />
+      <Label fx:id="label_timeSpent_weeks" layoutX="248.0" layoutY="101.0" prefHeight="40.0" prefWidth="197.0" text="Time spent: 0h, 2min" />
+      <Label fx:id="label_averageSession_weeks" layoutX="248.0" layoutY="141.0" prefHeight="40.0" prefWidth="197.0" text="Average session duration: 0h, 1min" />
+      <Label fx:id="label_timesOpened_weeks" layoutX="248.0" layoutY="181.0" prefHeight="40.0" prefWidth="197.0" text="Times opened: 2" />
+      <Label fx:id="label_timeElapsed" layoutX="26.0" layoutY="273.0" prefHeight="67.0" prefWidth="407.0" text="It has been 0 years, 1 months, 18 days, 1 hours and 24 minutes since you last opened Hades" wrapText="true">
+         <font>
+            <Font name="System Italic" size="12.0" />
+         </font>
+      </Label>
                </children></AnchorPane>

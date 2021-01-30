@@ -4,11 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Locale;
 import java.util.ResourceBundle;
-
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeConstants;
 
 import custom_fxml.CustomTab;
 import custom_fxml.TrendChart;
@@ -22,7 +18,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
-import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.chart.XYChart.Series;
@@ -35,8 +30,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Callback;
-import javafx.util.Pair;
-import javafx.util.StringConverter;
 import launch.Main;
 import model.Interpret.ProgramData;
 
@@ -59,7 +52,7 @@ public class TrendsTab extends CustomTab implements Initializable {
 	}
 
 	@FXML
-	private ComboBox comboBox_program;
+	private ComboBox<ProgramData> comboBox_program;
 	@FXML
 	private ImageView imageView_programIcon;
 	@FXML
@@ -73,8 +66,7 @@ public class TrendsTab extends CustomTab implements Initializable {
 
 	@FXML
 	public void comboBoxAction(ActionEvent event) {
-		String programName = ((Pair<String, String>)comboBox_program.getValue()).getKey();
-		setup(programName);
+		setup(comboBox_program.getValue());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -83,47 +75,26 @@ public class TrendsTab extends CustomTab implements Initializable {
 		callbackHashtable = new Hashtable<String, Callback<Integer, Node>>();
 		chartHashtable = new Hashtable<String, Hashtable<ChartType, Node>>();
 		
-		comboBox_program.getItems().addAll(programPairNameList);
-
-		comboBox_program.setValue(programPairNameList.get(0));
-		setup(programPairNameList.get(0).getKey());
+		comboBox_program.getItems().addAll(programDatabase);
+		comboBox_program.setValue(programDatabase.get(0));
 		
-		comboBox_program.setConverter(new StringConverter<Pair<String, String>>() {
-			  @Override
-			  public String toString(Pair<String, String> obj) {
-			    if (obj == null)
-			    {
-			      return "";
-			    }
-			    else 
-			    {
-			      return obj.getValue();
-			    }
-			  }
-
-			  @Override
-			  public Pair<String, String> fromString(String s)
-			  {
-			      return null;  
-			  }
-			});
-
-		comboBox_program.setCellFactory(new Callback<ListView<Pair<String, String>>, ListCell<Pair<String, String>>>() {
+		setup(programDatabase.get(0));
+		
+		comboBox_program.setCellFactory(new Callback<ListView<ProgramData>, ListCell<ProgramData>>() {
 			@Override
-			public ListCell<Pair<String, String>> call(ListView<Pair<String, String>> p) {
-				return new ListCell<Pair<String, String>>() {
+			public ListCell<ProgramData> call(ListView<ProgramData> p) {
+				return new ListCell<ProgramData>() {
 					@Override
-					protected void updateItem(Pair<String, String> item, boolean empty) {
+					protected void updateItem(ProgramData item, boolean empty) {
 						super.updateItem(item, empty);
 						getListView().setId("trendsTab_listView");
 						if (item == null || empty) {
 							setGraphic(null);
 						} else {
-							setText(item.getValue());
-							ProgramData program = interpret.getProgram(item.getKey());
+							setText(item.getPresentableName());
 							Image icon = null;
 							try {
-								icon = SwingFXUtils.toFXImage(program.getIcon(), null);
+								icon = SwingFXUtils.toFXImage(item.getIcon(), null);
 								ImageView iconImageView = new ImageView(icon);
 								iconImageView.setFitHeight(35);
 								iconImageView.setPreserveRatio(true);
@@ -150,21 +121,15 @@ public class TrendsTab extends CustomTab implements Initializable {
 		return dataList;
 	}
 
-	private void setup(String programName) {
-		ProgramData program = null;
-		for (Pair<String, String> pair : interpret.getNameList()) {
-			if (pair.getKey().equals(programName)) {
-				program = interpret.getProgram(pair.getKey());
-				break;
-			}
-		}
-
-		pagination_charts.setPageFactory(getProgramCallback(programName));
+	private void setup(ProgramData program) {
+		pagination_charts.setPageFactory(getProgramCallback(program));
 
 		imageView_programIcon.setImage(SwingFXUtils.toFXImage(program.getIcon(), null));
 	}
 
-	private Callback<Integer, Node> getProgramCallback(String programName) {
+	private Callback<Integer, Node> getProgramCallback(ProgramData program) {
+		String programName = program.getName();
+		
 		if (callbackHashtable.containsKey(programName)) {
 			return callbackHashtable.get(programName);
 		} else {
