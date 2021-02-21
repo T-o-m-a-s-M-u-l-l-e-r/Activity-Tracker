@@ -1,0 +1,3 @@
+.combo-box-popup .list-cell:selected {
+    -fx-background-color: green ;
+}

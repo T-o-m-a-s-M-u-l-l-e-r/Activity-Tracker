@@ -1,4 +1,5 @@
 package model;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,7 +23,6 @@ public class Tracker {
 	private static int periodSec = 1;
 	private static Timer timer = new Timer();
 	public static File saveFile;
-	public static final String SAVE_FILE_FORMAT = "db_log_%s";
 	public static DateTimeFormatter powershellFormatter;
 	private static Tracker tracker;
 	private static ArrayList<Program> programDatabase = new ArrayList<Program>();
@@ -49,7 +49,7 @@ public class Tracker {
 
 		return tracker;
 	}
-	
+
 	public void start() throws InterruptedException {
 		Thread loadThread = new Thread(new Runnable() {
 
@@ -57,31 +57,29 @@ public class Tracker {
 			public void run() {
 				try {
 					Tracker.getInstance().loadData();
-					System.out.println("LOAD");
 				} catch (NumberFormatException | IOException e) {
 					e.printStackTrace();
 				}
 			}
 		});
-		
+
 		loadThread.start();
 		loadThread.join();
-		
+
 		timer.scheduleAtFixedRate(new TimerTask() {
 
 			@Override
 			public void run() {
 				try {
 					periodically();
-//					System.out.println("PERIODICALLY");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
-		}, 0, periodSec*1000);
-		
+		}, 0, periodSec * 1000);
+
 		timer.scheduleAtFixedRate(new TimerTask() {
-			
+
 			@Override
 			public void run() {
 				try {
@@ -93,11 +91,10 @@ public class Tracker {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				System.out.println("Data saved");
 			}
-		}, 0, 10*1000);
+		}, 0, 10 * 1000);
 	}
-	
+
 	public void end() throws FileNotFoundException, UnsupportedEncodingException {
 		timer.cancel();
 		saveData();
@@ -122,12 +119,12 @@ public class Tracker {
 		ArrayList<Hashtable<String, String>> dataBundle = bundleData(streamReader);
 		ArrayList<WindowProcess> runningProcesses = new ArrayList<WindowProcess>();
 		for (Hashtable<String, String> dict : dataBundle) {
-			
+
 			try {
-			runningProcesses.add(new WindowProcess(dict));
+				runningProcesses.add(new WindowProcess(dict));
 			} catch (IllegalArgumentException e) {
-				//Happens if I get a process without start time (like 'dwm')
-				//Just ignore
+				// Happens if I get a process without start time (like 'dwm')
+				// Just ignore
 			}
 		}
 		return runningProcesses;
@@ -153,11 +150,14 @@ public class Tracker {
 				if (line.isBlank()) {
 					if (!wasLastBlank) {
 						dataBundle.add(new Hashtable<String, String>(properties));
-						
-						if (Program.default_icon_path.isBlank() && properties.getOrDefault(WindowProcess.Property.Name.toString(), "").equals("ApplicationFrameHost")) {
-							Program.default_icon_path = properties.getOrDefault(WindowProcess.Property.Path.toString(), "C:\\WINDOWS\\system32\\ApplicationFrameHost.exe");
+
+						if (Program.default_icon_path.isBlank()
+								&& properties.getOrDefault(WindowProcess.Property.Name.toString(), "")
+										.equals("ApplicationFrameHost")) {
+							Program.default_icon_path = properties.getOrDefault(WindowProcess.Property.Path.toString(),
+									"C:\\WINDOWS\\system32\\ApplicationFrameHost.exe");
 						}
-						
+
 						properties.clear();
 						wasLastBlank = true;
 					}
@@ -187,12 +187,12 @@ public class Tracker {
 			}
 
 		}
-		
+
 		ArrayList<WindowProcess> notRunning = new ArrayList<WindowProcess>(lastProcessBundle);
 		notRunning.removeAll(runningProcesses);
 
 		for (WindowProcess process : notRunning) {
-			
+
 			for (Program program : programDatabase) {
 				program.end(process.getId(), lastCheck);
 			}
@@ -203,25 +203,25 @@ public class Tracker {
 
 	private void loadData() throws NumberFormatException, IOException {
 		saveFile = new File(SAVE_FILE_PATH);
-		
+
 		if (saveFile.exists()) {
-		BufferedReader reader = new BufferedReader(new FileReader(saveFile));
-		ArrayList<Hashtable<String, String>> dictList = bundleData(reader);
-		
-		for (Hashtable<String, String> dict : dictList) {
-			programDatabase.add(new Program(dict, true));
+			BufferedReader reader = new BufferedReader(new FileReader(saveFile));
+			ArrayList<Hashtable<String, String>> dictList = bundleData(reader);
+
+			for (Hashtable<String, String> dict : dictList) {
+				programDatabase.add(new Program(dict, true));
+			}
+
 		}
-		
-		}
-		
+
 	}
-	
+
 	public Interpret getInterpret() {
-		
+
 		for (Program program : programDatabase) {
 			program.cleanIcon();
 		}
-		
+
 		return new Interpret(programDatabase);
 	}
 

@@ -39,13 +39,13 @@ class Program {
 
 		icon = getIcon;
 	}
-	
+
 	public void cleanIcon() {
-		
-		if(!default_icon_path.isBlank() && icon == null) {
+
+		if (!default_icon_path.isBlank() && icon == null) {
 			icon = JIconExtract.getIconForFile(128, 128, new File(default_icon_path));
 		}
-		
+
 	}
 
 	@Override

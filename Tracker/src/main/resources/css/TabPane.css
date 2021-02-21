@@ -3,7 +3,9 @@
     -fx-pref-height: 270;
 }
 
-/* #listView_total .list-cell {
-    -fx-cell-hover-color: #0093ff;
-    -fx-background-color: white;
-}*/
+#historyTab_comboBox {
+	-fx-pref-width: 24;
+    -fx-pref-height: 24;
+    -fx-min-width: 24;
+    -fx-min-height: 24;
+}

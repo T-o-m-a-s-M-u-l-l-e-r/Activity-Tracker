@@ -1,10 +1,11 @@
 package custom_fxml;
 
+import javafx.beans.NamedArg;
 import javafx.collections.ObservableList;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.chart.AreaChart;
-import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.Axis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.shape.ClosePath;
 import javafx.scene.shape.CubicCurveTo;
@@ -16,8 +17,8 @@ import javafx.util.Pair;
 
 public class TrendChart extends AreaChart {
 
-	public TrendChart() {
-		super(new NumberAxis(), new NumberAxis());
+	public TrendChart(@NamedArg("xAxis") Axis xAxis, @NamedArg("yAxis") Axis yAxis) {
+		super(xAxis, yAxis);
 	}
 
 	@Override
@@ -61,17 +62,19 @@ public class TrendChart extends AreaChart {
 		fillElements.add(new LineTo(dataPoints[0].getX(), dataPoints[0].getY()));
 		for (int i = 1; i < dataPoints.length; i++) {
 			final int ci = i - 1;
+
 			strokeElements.add(new CubicCurveTo(firstControlPoints[ci].getX(), firstControlPoints[ci].getY(),
 					secondControlPoints[ci].getX(), secondControlPoints[ci].getY(), dataPoints[i].getX(),
 					dataPoints[i].getY()));
 			fillElements.add(new CubicCurveTo(firstControlPoints[ci].getX(), firstControlPoints[ci].getY(),
 					secondControlPoints[ci].getX(), secondControlPoints[ci].getY(), dataPoints[i].getX(),
 					dataPoints[i].getY()));
+
 		}
 		fillElements.add(new LineTo(dataPoints[dataPoints.length - 1].getX(), zeroY));
 		fillElements.add(new ClosePath());
 	}
-	
+
 	public static Pair<Point2D[], Point2D[]> getCurveControlPoints(Point2D[] knots) {
 
 		Point2D[] firstControlPoints, secondControlPoints;
@@ -92,7 +95,7 @@ public class TrendChart extends AreaChart {
 
 			double x2 = 2 * firstControlPoints[0].getX() - knots[0].getX();
 			double y2 = 2 * firstControlPoints[0].getY() - knots[0].getY();
-			
+
 			secondControlPoints[0] = new Point2D(x2, y2);
 			return new Pair<Point2D[], Point2D[]>(firstControlPoints, secondControlPoints);
 		}
@@ -117,9 +120,11 @@ public class TrendChart extends AreaChart {
 		for (int i = 0; i < n; ++i) {
 			firstControlPoints[i] = new Point2D(x[i], y[i]);
 			if (i < n - 1)
-				secondControlPoints[i] = new Point2D(2 * knots[i + 1].getX() - x[i + 1], 2 * knots[i + 1].getY() - y[i + 1]);
+				secondControlPoints[i] = new Point2D(2 * knots[i + 1].getX() - x[i + 1],
+						2 * knots[i + 1].getY() - y[i + 1]);
 			else
-				secondControlPoints[i] = new Point2D((knots[n].getX() + x[n - 1]) / 2, (knots[n].getY() + y[n - 1]) / 2);
+				secondControlPoints[i] = new Point2D((knots[n].getX() + x[n - 1]) / 2,
+						(knots[n].getY() + y[n - 1]) / 2);
 		}
 		return new Pair<Point2D[], Point2D[]>(firstControlPoints, secondControlPoints);
 	}

@@ -14,171 +14,188 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import launch.Main;
 
-public class GanttChart<X,Y> extends XYChart<X,Y> {
+public class GanttChart<X, Y> extends XYChart<X, Y> {
 
-    public static class ExtraData {
+	public static class ExtraData {
 
-        public double length;
-        public String styleClass;
+		public double length;
+		public String styleClass;
 
+		public ExtraData(double lengthMs, String styleClass) {
+			super();
+			this.length = lengthMs;
+			this.styleClass = styleClass;
+		}
 
-        public ExtraData(double lengthMs, String styleClass) {
-            super();
-            this.length = lengthMs;
-            this.styleClass = styleClass;
-        }
-        public double getLength() {
-            return length;
-        }
-        public void setLength(double length) {
-            this.length = length;
-        }
-        public String getStyleClass() {
-            return styleClass;
-        }
-        public void setStyleClass(String styleClass) {
-            this.styleClass = styleClass;
-        }
+		public double getLength() {
+			return length;
+		}
 
+		public void setLength(double length) {
+			this.length = length;
+		}
 
-    }
+		public String getStyleClass() {
+			return styleClass;
+		}
 
-    private double blockHeight = 10;
+		public void setStyleClass(String styleClass) {
+			this.styleClass = styleClass;
+		}
 
-    public GanttChart() {
-        super((Axis<X>) new NumberAxis(), (Axis<Y>) new CategoryAxis());
-        setData(FXCollections.observableArrayList());
-        getStylesheets().add(getClass().getClassLoader().getResource(Main.GANTT_CHART_CSS_PATH).toString());
-    }
+	}
 
-    private static String getStyleClass( Object obj) {
-        return ((ExtraData) obj).getStyleClass();
-    }
+	private double blockHeight = 10;
 
-    private static double getLength( Object obj) {
-        return ((ExtraData) obj).getLength();
-    }
+	public GanttChart() {
+		super((Axis<X>) new NumberAxis(), (Axis<Y>) new CategoryAxis());
+		setData(FXCollections.observableArrayList());
+		getStylesheets().add(getClass().getClassLoader().getResource(Main.GANTT_CHART_CSS_PATH).toString());
+	}
 
-    @Override protected void layoutPlotChildren() {
+	private static String getStyleClass(Object obj) {
+		return ((ExtraData) obj).getStyleClass();
+	}
 
-      for (int seriesIndex=0; seriesIndex < getData().size(); seriesIndex++) {
+	private static double getLength(Object obj) {
+		return ((ExtraData) obj).getLength();
+	}
 
-            Series<X,Y> series = getData().get(seriesIndex);
+	@Override
+	protected void layoutPlotChildren() {
 
-            Iterator<Data<X,Y>> iter = getDisplayedDataIterator(series);
-            while(iter.hasNext()) {
-                Data<X,Y> item = iter.next();
-                double x = getXAxis().getDisplayPosition(item.getXValue());
-                double y = getYAxis().getDisplayPosition(item.getYValue());
-                if (Double.isNaN(x) || Double.isNaN(y)) {
-                    continue;
-                }
-                Node block = item.getNode();
-                Rectangle ellipse;
-                if (block != null) {
-                    if (block instanceof StackPane) {
-                        StackPane region = (StackPane)item.getNode();
-                        if (region.getShape() == null) {
-                            ellipse = new Rectangle( getLength( item.getExtraValue()), getBlockHeight());
-                        } else if (region.getShape() instanceof Rectangle) {
-                            ellipse = (Rectangle)region.getShape();
-                        } else {
-                            return;
-                        }
-                        ellipse.setWidth( getLength( item.getExtraValue()) * ((getXAxis() instanceof NumberAxis) ? Math.abs(((NumberAxis)getXAxis()).getScale()) : 1));
-                        ellipse.setHeight(getBlockHeight() * ((getYAxis() instanceof NumberAxis) ? Math.abs(((NumberAxis)getYAxis()).getScale()) : 1));
-                        y -= getBlockHeight() / 2.0;
+		for (int seriesIndex = 0; seriesIndex < getData().size(); seriesIndex++) {
 
-                        region.setShape(null);
-                        region.setShape(ellipse);
-                        region.setScaleShape(false);
-                        region.setCenterShape(false);
-                        region.setCacheShape(false);
+			Series<X, Y> series = getData().get(seriesIndex);
 
-                        block.setLayoutX(x);
-                        block.setLayoutY(y);
-                    }
-                }
-            }
-        }
-    }
+			Iterator<Data<X, Y>> iter = getDisplayedDataIterator(series);
+			while (iter.hasNext()) {
+				Data<X, Y> item = iter.next();
+				double x = getXAxis().getDisplayPosition(item.getXValue());
+				double y = getYAxis().getDisplayPosition(item.getYValue());
+				if (Double.isNaN(x) || Double.isNaN(y)) {
+					continue;
+				}
+				Node block = item.getNode();
+				Rectangle ellipse;
+				if (block != null) {
+					if (block instanceof StackPane) {
+						StackPane region = (StackPane) item.getNode();
+						if (region.getShape() == null) {
+							ellipse = new Rectangle(getLength(item.getExtraValue()), getBlockHeight());
+						} else if (region.getShape() instanceof Rectangle) {
+							ellipse = (Rectangle) region.getShape();
+						} else {
+							return;
+						}
+						ellipse.setWidth(getLength(item.getExtraValue())
+								* ((getXAxis() instanceof NumberAxis) ? Math.abs(((NumberAxis) getXAxis()).getScale())
+										: 1));
+						ellipse.setHeight(getBlockHeight()
+								* ((getYAxis() instanceof NumberAxis) ? Math.abs(((NumberAxis) getYAxis()).getScale())
+										: 1));
+						y -= getBlockHeight() / 2.0;
 
-    public double getBlockHeight() {
-        return blockHeight;
-    }
+						region.setShape(null);
+						region.setShape(ellipse);
+						region.setScaleShape(false);
+						region.setCenterShape(false);
+						region.setCacheShape(false);
 
-    public void setBlockHeight( double blockHeight) {
-        this.blockHeight = blockHeight;
-    }
+						block.setLayoutX(x);
+						block.setLayoutY(y);
+					}
+				}
+			}
+		}
+	}
 
-    @Override protected void dataItemAdded(Series<X,Y> series, int itemIndex, Data<X,Y> item) {
-        Node block = createContainer(series, getData().indexOf(series), item, itemIndex);
-        getPlotChildren().add(block);
-    }
+	public double getBlockHeight() {
+		return blockHeight;
+	}
 
-    @Override protected  void dataItemRemoved(final Data<X,Y> item, final Series<X,Y> series) {
-        final Node block = item.getNode();
-            getPlotChildren().remove(block);
-            removeDataItemFromDisplay(series, item);
-    }
+	public void setBlockHeight(double blockHeight) {
+		this.blockHeight = blockHeight;
+	}
 
-    @Override protected void dataItemChanged(Data<X, Y> item) {
-    }
+	@Override
+	protected void dataItemAdded(Series<X, Y> series, int itemIndex, Data<X, Y> item) {
+		Node block = createContainer(series, getData().indexOf(series), item, itemIndex);
+		getPlotChildren().add(block);
+	}
 
-    @Override protected  void seriesAdded(Series<X,Y> series, int seriesIndex) {
-        for (int j=0; j<series.getData().size(); j++) {
-            Data<X,Y> item = series.getData().get(j);
-            Node container = createContainer(series, seriesIndex, item, j);
-            getPlotChildren().add(container);
-        }
-    }
+	@Override
+	protected void dataItemRemoved(final Data<X, Y> item, final Series<X, Y> series) {
+		final Node block = item.getNode();
+		getPlotChildren().remove(block);
+		removeDataItemFromDisplay(series, item);
+	}
 
-    @Override protected  void seriesRemoved(final Series<X,Y> series) {
-        for (XYChart.Data<X,Y> d : series.getData()) {
-            final Node container = d.getNode();
-            getPlotChildren().remove(container);
-        }
-        removeSeriesFromDisplay(series);
+	@Override
+	protected void dataItemChanged(Data<X, Y> item) {
+	}
 
-    }
+	@Override
+	protected void seriesAdded(Series<X, Y> series, int seriesIndex) {
+		for (int j = 0; j < series.getData().size(); j++) {
+			Data<X, Y> item = series.getData().get(j);
+			Node container = createContainer(series, seriesIndex, item, j);
+			getPlotChildren().add(container);
+		}
+	}
 
+	@Override
+	protected void seriesRemoved(final Series<X, Y> series) {
+		for (XYChart.Data<X, Y> d : series.getData()) {
+			final Node container = d.getNode();
+			getPlotChildren().remove(container);
+		}
+		removeSeriesFromDisplay(series);
 
-    private Node createContainer(Series<X, Y> series, int seriesIndex, final Data<X,Y> item, int itemIndex) {
+	}
 
-        Node container = item.getNode();
+	private Node createContainer(Series<X, Y> series, int seriesIndex, final Data<X, Y> item, int itemIndex) {
 
-        if (container == null) {
-            container = new StackPane();
-            item.setNode(container);
-        }
+		Node container = item.getNode();
 
-        container.getStyleClass().add( getStyleClass( item.getExtraValue()));
+		if (container == null) {
+			container = new StackPane();
+			item.setNode(container);
+		}
 
-        return container;
-    }
+		container.getStyleClass().add(getStyleClass(item.getExtraValue()));
 
-    @Override protected void updateAxisRange() {
-        final Axis<X> xa = getXAxis();
-        final Axis<Y> ya = getYAxis();
-        List<X> xData = null;
-        List<Y> yData = null;
-        if(xa.isAutoRanging()) xData = new ArrayList<X>();
-        if(ya.isAutoRanging()) yData = new ArrayList<Y>();
-        if(xData != null || yData != null) {
-            for(Series<X,Y> series : getData()) {
-                for(Data<X,Y> data: series.getData()) {
-                    if(xData != null) {
-                        xData.add(data.getXValue());
-                        xData.add(xa.toRealValue(xa.toNumericValue(data.getXValue()) + getLength(data.getExtraValue())));
-                    }
-                    if(yData != null){
-                        yData.add(data.getYValue());
-                    }
-                }
-            }
-            if(xData != null) xa.invalidateRange(xData);
-            if(yData != null) ya.invalidateRange(yData);
-        }
-    }
+		return container;
+	}
+
+	@Override
+	protected void updateAxisRange() {
+		final Axis<X> xa = getXAxis();
+		final Axis<Y> ya = getYAxis();
+		List<X> xData = null;
+		List<Y> yData = null;
+		if (xa.isAutoRanging())
+			xData = new ArrayList<X>();
+		if (ya.isAutoRanging())
+			yData = new ArrayList<Y>();
+		if (xData != null || yData != null) {
+			for (Series<X, Y> series : getData()) {
+				for (Data<X, Y> data : series.getData()) {
+					if (xData != null) {
+						xData.add(data.getXValue());
+						xData.add(
+								xa.toRealValue(xa.toNumericValue(data.getXValue()) + getLength(data.getExtraValue())));
+					}
+					if (yData != null) {
+						yData.add(data.getYValue());
+					}
+				}
+			}
+			if (xData != null)
+				xa.invalidateRange(xData);
+			if (yData != null)
+				ya.invalidateRange(yData);
+		}
+	}
 
 }

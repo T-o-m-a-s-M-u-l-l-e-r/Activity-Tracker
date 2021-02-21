@@ -18,26 +18,35 @@
         <javafx.main.class>launch.Main</javafx.main.class>
         <main.class>launch.MavenMain</main.class>
         <exec.mainClass>launch.MavenMain</exec.mainClass>
-   	<maven.compiler.source>14</maven.compiler.source>
-   	<maven.compiler.target>14</maven.compiler.target>
+   	<maven.compiler.source>15</maven.compiler.source>
+   	<maven.compiler.target>15</maven.compiler.target>
     </properties>
   
   <build>
   	<plugins>
-  	
-  		<plugin>
-      <artifactId>maven-assembly-plugin</artifactId>
-      <configuration>
-        <archive>
-          <manifest>
-            <mainClass>launch.MavenMain</mainClass>
-          </manifest>
-        </archive>
-        <descriptorRefs>
-          <descriptorRef>jar-with-dependencies</descriptorRef>
-        </descriptorRefs>
-      </configuration>
-    </plugin>
+    
+    <plugin>
+  <artifactId>maven-assembly-plugin</artifactId>
+  <configuration>
+  
+    <descriptorRefs>
+      <descriptorRef>jar-with-dependencies</descriptorRef>                            
+    </descriptorRefs>
+    <archive>
+      <manifest>
+        <mainClass>launch.MavenMain</mainClass>
+      </manifest>
+    </archive>
+  </configuration>
+  <executions>
+    <execution>
+      <goals>
+        <goal>single</goal>                                                           
+      </goals>
+      <phase>package</phase>                                                          
+    </execution>
+  </executions>
+</plugin>
   	
     <plugin>
         <groupId>org.openjfx</groupId>
@@ -51,6 +60,7 @@
 </plugins>
   </build>
   <dependencies>
+  
 <dependency>
     <groupId>net.java.dev.jna</groupId>
     <artifactId>jna-platform</artifactId>

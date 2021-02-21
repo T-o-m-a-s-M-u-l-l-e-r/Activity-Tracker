@@ -22,7 +22,7 @@ import launch.Main;
 import model.Interpret.ProgramData;
 
 public class StatsTab extends CustomTab implements Initializable {
-	
+
 	public static final String TIME_ELAPSED_FORMAT = "It has been %s since you last opened %s";
 	public static final String AVERAGE_SESSION_FORMAT = "Average session duration: %s";
 	public static final String TIMES_OPENED_FORMAT = "Times opened: %s";
@@ -44,30 +44,30 @@ public class StatsTab extends CustomTab implements Initializable {
 
 		int remainingHours = (int) (duration.getStandardHours());
 		int minutes = (int) (duration.getStandardMinutes() - remainingHours * 60);
-		
+
 		if (verbose) {
 			String output = "";
 
-				int years = remainingHours/(365*24);
-				remainingHours -= years*365*24;
-				output += String.format("%d years", years);
-			
-				int months = remainingHours/(30*24);
-				remainingHours -= months*30*24;
-				output += String.format(", %d months", months);
-			
-				int days = remainingHours/(24);
-				remainingHours -= days*24;
-				output += String.format(", %d days", days);
-			
-				output += String.format(", %d hours", remainingHours);
-				output += String.format(" and %d minutes", minutes);
-			
+			int years = remainingHours / (365 * 24);
+			remainingHours -= years * 365 * 24;
+			output += String.format("%d years", years);
+
+			int months = remainingHours / (30 * 24);
+			remainingHours -= months * 30 * 24;
+			output += String.format(", %d months", months);
+
+			int days = remainingHours / (24);
+			remainingHours -= days * 24;
+			output += String.format(", %d days", days);
+
+			output += String.format(", %d hours", remainingHours);
+			output += String.format(" and %d minutes", minutes);
+
 			return output;
 		} else {
 			return String.format("%dh, %dmin", remainingHours, minutes);
 		}
-		
+
 	}
 
 	@FXML
@@ -78,9 +78,12 @@ public class StatsTab extends CustomTab implements Initializable {
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		comboBox_program.getItems().addAll(programDatabase);
-		comboBox_program.setValue(programDatabase.get(0));
-		
-		setup(programDatabase.get(0));
+
+		if (programDatabase.size() > 0) {
+			comboBox_program.setValue(programDatabase.get(0));
+
+			setup(programDatabase.get(0));
+		}
 
 		comboBox_program.setCellFactory(new Callback<ListView<ProgramData>, ListCell<ProgramData>>() {
 			@Override
@@ -114,7 +117,7 @@ public class StatsTab extends CustomTab implements Initializable {
 
 	public void setup(ProgramData program) {
 		imageView_programIcon.setImage(SwingFXUtils.toFXImage(program.getIcon(), null));
-		
+
 		String timeElapsed = durationToString(interpret.getTimeElapsedSinceOpen(program), true);
 		label_timeElapsed.setText(String.format(TIME_ELAPSED_FORMAT, timeElapsed, program.getPresentableName()));
 

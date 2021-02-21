@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.DateTimeFormatterBuilder;
 
 import controllers.HistoryTab.SpecialComboBox.ProgramDataWrapper;
 import custom_fxml.CustomTab;
@@ -35,12 +35,13 @@ import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.util.Pair;
+import javafx.util.StringConverter;
 import launch.Main;
 import model.Interpret.ProgramData;
 
 public class HistoryTab extends CustomTab implements Initializable {
-	public static final int MAX_NAME_LENGTH = 25;
-	private static HashSet<ProgramData> selection = new HashSet<ProgramData>();
+	public static final int MAX_NAME_LENGTH = 15;
+	private static HashSet<ProgramData> selection;
 
 	@FXML
 	private DatePicker datePicker;
@@ -59,6 +60,7 @@ public class HistoryTab extends CustomTab implements Initializable {
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		specialComboBox.setHistoryTab(this);
+		specialComboBox.setId("historyTab_comboBox");
 		xAxis = (NumberAxis) ganttChart.getXAxis();
 		yAxis = (CategoryAxis) ganttChart.getYAxis();
 		xAxis.setLowerBound(0);
@@ -79,40 +81,62 @@ public class HistoryTab extends CustomTab implements Initializable {
 
 		datePicker.setValue(java.time.LocalDate.now());
 		setChartTitle();
-		
+
+		selection = new HashSet<ProgramData>();
 		specialComboBox.setItems(programDatabase);
 		setDefaultSelection();
+
+		xAxis.setTickLabelFormatter(new StringConverter<Number>() {
+			@Override
+			public String toString(Number object) {
+				int value = (int) Math.round((Double) object);
+
+				if (value > 9) {
+					return String.format("%d:00", value);
+				} else {
+					return String.format("0%d:00", value);
+				}
+
+			}
+
+			@Override
+			public Number fromString(String string) {
+				Pattern pattern = Pattern.compile("\\d+");
+				Matcher matcher = pattern.matcher(string);
+				return matcher.find() ? Integer.valueOf(matcher.group()) : 0;
+			}
+		});
 	}
-	
+
 	public void setDefaultSelection() {
 		HashSet<ProgramData> defaultSelection = new HashSet<ProgramData>();
-		
-		for (int i = 0; i < SpecialComboBox.SELECTION_LIMIT; i++) {
+
+		for (int i = 0; i < Math.min(SpecialComboBox.SELECTION_LIMIT, specialComboBox.getItems().size()); i++) {
 			defaultSelection.add(programDatabase.get(i));
 		}
-		
-		ObservableList<ProgramDataWrapper> items = specialComboBox.getItems();
 
-		for (ProgramData program : defaultSelection) {
+		ObservableList<ProgramDataWrapper> items = specialComboBox.getItems();
+		selection.addAll(defaultSelection);
+
+		for (ProgramData program : selection) {
 			int index = items.indexOf(program);
-			
+
 			if (index != -1) {
 				items.get(index).checkProperty().set(true);
 				addSeries(program);
 			}
-			
+
 		}
-		
-		
+
 	}
-	
+
 	public void setChartTitle() {
 		LocalDate localDate = datePicker.getValue();
 		DateTime jodaTime = toJodaTime(localDate);
 		String title = jodaTime.toString(DateTimeFormat.fullDate());
 		ganttChart.setTitle(title);
 	}
-	
+
 	public void addSeries(ProgramData program) {
 		DateTime time = toJodaTime(datePicker.getValue());
 		String name = getValidName(program, MAX_NAME_LENGTH);
@@ -134,10 +158,10 @@ public class HistoryTab extends CustomTab implements Initializable {
 
 		for (Iterator<?> iterator = ganttChart.getData().iterator(); iterator.hasNext();) {
 			Series<Number, ?> series = (Series<Number, ?>) iterator.next();
-		    if(series.getName() != null && series.getName().equals(name)) {
-		        iterator.remove();
-		        break;
-		    }
+			if (series.getName() != null && series.getName().equals(name)) {
+				iterator.remove();
+				break;
+			}
 		}
 
 	}
@@ -155,7 +179,7 @@ public class HistoryTab extends CustomTab implements Initializable {
 
 		return name;
 	}
-	
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static XYChart.Series getSeries(ProgramData program, ArrayList<Pair<Double, Double>> points) {
 		String programName = getValidName(program, MAX_NAME_LENGTH);
@@ -168,7 +192,7 @@ public class HistoryTab extends CustomTab implements Initializable {
 					new GanttChart.ExtraData(pair.getValue(), "status-on"));
 			series.getData().add(data);
 		}
-		
+
 		series.setName(programName);
 		return series;
 	}
@@ -178,11 +202,11 @@ public class HistoryTab extends CustomTab implements Initializable {
 	public void onAction(ActionEvent event) {
 		ganttChart.getData().clear();
 		yAxis.getCategories().clear();
-		
+
 		for (ProgramData program : selection) {
 			addSeries(program);
 		}
-		
+
 		setChartTitle();
 	}
 
@@ -195,8 +219,6 @@ public class HistoryTab extends CustomTab implements Initializable {
 	public static class SpecialComboBox extends ComboBox<ProgramDataWrapper> {
 		private HistoryTab historyTab;
 		private static final int SELECTION_LIMIT = 4;
-		public static final String SELECTED_CELL_CSS_PATH = "css/SelectedCell.css";
-		public static final String NOT_SELECTED_CELL_CSS_PATH = "css/NotSelectedCell.css";
 
 		public SpecialComboBox() {
 			setEditable(false);
@@ -229,8 +251,6 @@ public class HistoryTab extends CustomTab implements Initializable {
 
 				cell.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> {
 
-					getSelectionModel().clearSelection();
-
 					ProgramDataWrapper item = cell.getItem();
 					if (item != null) {
 
@@ -242,7 +262,6 @@ public class HistoryTab extends CustomTab implements Initializable {
 								selection.add(item.getProgramData());
 								historyTab.addSeries(item.getProgramData());
 								item.checkProperty().set(trySelect);
-
 							}
 
 						} else {
@@ -251,15 +270,9 @@ public class HistoryTab extends CustomTab implements Initializable {
 							selection.remove(item.getProgramData());
 						}
 
-						if (item.getCheck()) {
-							cell.getStylesheets()
-									.add(getClass().getClassLoader().getResource(SELECTED_CELL_CSS_PATH).toString());
-						} else {
-							// cell.getStylesheets().add(getClass().getClassLoader().getResource(NOT_SELECTED_CELL_CSS_PATH).toString());
-							cell.getStylesheets().clear();
-						}
-
 					}
+
+					getSelectionModel().clearSelection();
 
 				});
 
