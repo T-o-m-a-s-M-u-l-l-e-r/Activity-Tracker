@@ -33,10 +33,14 @@ public class Tracker {
 		Process patternProcess;
 		lastCheck = new DateTime();
 		try {
-			patternProcess = Runtime.getRuntime().exec("powershell (Get-culture).DateTimeFormat.FullDateTimePattern");
-			BufferedReader patternReader = new BufferedReader(new InputStreamReader(patternProcess.getInputStream()));
-			String powershellDatePattern = patternReader.readLine().replaceAll("dddd", "EEEE");
-			powershellFormatter = DateTimeFormat.forPattern(powershellDatePattern);
+			if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+				patternProcess = Runtime.getRuntime().exec("powershell (Get-culture).DateTimeFormat.FullDateTimePattern");
+				BufferedReader patternReader = new BufferedReader(new InputStreamReader(patternProcess.getInputStream()));
+				String powershellDatePattern = patternReader.readLine().replace("dddd", "EEEE").replace("ddd", "EEE").replace("tt", "aa").replace("t", "a").replace("fffffff", "SSSSSSS").replace("ffffff", "SSSSSS").replace("fffff", "SSSSS").replace("ffff", "SSSS").replace("fff", "SSS").replace("ff", "SS").replace("f", "S");
+				powershellFormatter = DateTimeFormat.forPattern(powershellDatePattern);
+			} else {
+			    throw new UnsupportedOperationException("This application only supports Windows");
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

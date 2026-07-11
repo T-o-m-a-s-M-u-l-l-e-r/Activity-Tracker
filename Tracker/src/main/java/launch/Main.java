@@ -30,7 +30,7 @@ import javafx.stage.Stage;
 import model.Tracker;
 
 public class Main extends Application {
-	public static final String APP_NAME = "Tracker";
+	public static final String APP_NAME = "Activity Tracker";
 	public static final String APP_ICON16_PATH = "img/icon16.png";
 	public static final String APP_ICON32_PATH = "img/icon32.png";
 	public static final String APP_ICON64_PATH = "img/icon64.png";
