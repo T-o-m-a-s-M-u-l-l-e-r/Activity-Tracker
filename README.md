@@ -1,4 +1,4 @@
-# Activity Tracker <img src="src/main/resources/img/icon64.png" alt="Icon" width="48" style="vertical-align: middle; margin-left: 10px;"/>
+## <img src="src/main/resources/img/icon64.png" alt="Icon" width="48" style="vertical-align: middle; margin-right: 10px;"/> Activity Tracker
 
 A Java desktop application that runs in the background and tracks which applications you use and for how long. It records individual usage sessions, stores them locally, and provides charts and visualizations of your habits. Originally created for my Matura exam in 2021.
 
