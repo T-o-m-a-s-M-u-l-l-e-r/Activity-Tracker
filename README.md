@@ -1,6 +1,6 @@
 # Activity Tracker
 
-A Java desktop application that runs in the background and tracks which applications you use and for how long. It records individual usage sessions, stores them locally, and provides charts and visualizations of your habits.
+A Java desktop application that runs in the background and tracks which applications you use and for how long. It records individual usage sessions, stores them locally, and provides charts and visualizations of your habits. Originally created for my Matura exam in 2021.
 
 ## Features
 
